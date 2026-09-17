@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Café POS (iPad Version)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 10px;
+            color: #333;
+            display: flex;
+            height: 100vh;
+            box-sizing: border-box;
+            gap: 15px;
+        }
+        
+        .menu-section {
+            flex: 2;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .category-title {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+            color: #2c3e50;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .menu-card {
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fafafa;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .menu-name {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .btn-group {
+            display: flex;
+            gap: 5px;
+        }
+        .btn-add {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+        .btn-hot { background-color: #ffeaa7; color: #d35400; }
+        .btn-hot:active { background-color: #f1c40f; }
+        .btn-cold { background-color: #81ecec; color: #008080; }
+        .btn-cold:active { background-color: #00cec9; }
+
+        .cart-section {
+            flex: 1;
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .total-box {
+            background-color: #e83e8c;
+            color: white;
+            padding: 15px;
+            text-align: right;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .total-amount {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .total-summary {
+            font-size: 14px;
+            margin-top: 8px;
+            color: #ffeaa7;
+            font-weight: 500;
+        }
+        .cart-table-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px 5px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th { border-bottom: 2px solid #e83e8c; font-size: 14px; }
+        
+        .qty-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-qty {
+            background: #e0e0e0;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-qty:active { background: #ccc; }
+        .btn-clear {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .checkbox-custom {
+            transform: scale(1.6);
+            margin-right: 15px;
+            cursor: pointer;
+            accent-color: #28a745;
+        }
+        .item-checked-text {
+            text-decoration: line-through;
+            color: #999;
+        }
+        .row-checked {
+            opacity: 0.6;
+            background-color: #f9f9f9;
+        }
+        .payment-badge {
+            font-size: 12px;
+            margin-top: 5px;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        /* ----- สไตล์สำหรับ Modal (หน้าต่างเด้ง) ----- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            width: 350px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .modal-title {
+            margin-top: 0;
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .modal-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .modal-btn-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .btn-modal {
+            flex: 1;
+            padding: 20px 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-transfer { background-color: #007bff; color: white; }
+        .btn-transfer:active { background-color: #0056b3; }
+        .btn-cash { background-color: #28a745; color: white; }
+        .btn-cash:active { background-color: #1e7e34; }
+        .btn-cancel-modal {
+            background-color: transparent;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            padding: 10px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="menu-section" id="menuContainer"></div>
+
+    <div class="cart-section">
+        <div class="total-box">
+            <div class="total-amount" id="totalDisplay">฿0.00</div>
+            <div class="total-summary" id="summaryDisplay">🥤 รวม: 0 แก้ว | 💵 เงินสด: ฿0 | 📱 โอน: ฿0</div>
+        </div>
+
+        <div class="cart-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50%">รายการ</th>
+                        <th style="width: 20%">ราคา</th>
+                        <th style="width: 30%">จำนวน</th>
+                    </tr>
+                </thead>
+                <tbody id="cartBody"></tbody>
+            </table>
+        </div>
+
+        <button class="btn-clear" onclick="clearCart()">🗑️ เคลียร์รายการ (บิลใหม่)</button>
+    </div>
+
+    <!-- Modal (หน้าต่างเด้งตอนกดติ๊กเช็คออเดอร์) -->
+    <div id="paymentModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalItemName">ชื่อเมนู</h3>
+            <div class="modal-subtitle">ลูกค้าชำระเงินรูปแบบใด?</div>
+            <div class="modal-btn-group">
+                <button class="btn-modal btn-transfer" onclick="confirmPayment('โอนเงิน')">📱 โอนเงิน</button>
+                <button class="btn-modal btn-cash" onclick="confirmPayment('เงินสด')">💵 เงินสด</button>
+            </div>
+            <button class="btn-cancel-modal" onclick="closeModal()">ยกเลิก</button>
+        </div>
+    </div>
+
+    <script>
+        const menuData = [
+            // กาแฟ
+            { name: "อเมริกาโน่", hot: 30, cold: 40, cat: "กาแฟ" },
+            { name: "เอสเปรสโซ่", hot: 30, cold: 45, cat: "กาแฟ" },
+            { name: "คาปูชิโน่", hot: 35, cold: 45, cat: "กาแฟ" },
+            { name: "มอคค่า", hot: 35, cold: 45, cat: "กาแฟ" },
+            { name: "ลาเต้", hot: 35, cold: 45, cat: "กาแฟ" },
+            { name: "มัคคิอาโต้", hot: 35, cold: 45, cat: "กาแฟ" },
+            { name: "มะนาวโซดาคอฟฟี่", hot: null, cold: 45, cat: "กาแฟ" },
+            { name: "น้ำผึ้งมะนาวคอฟฟี่", hot: null, cold: 45, cat: "กาแฟ" },
+            { name: "มะพร้าวคอฟฟี่", hot: null, cold: 45, cat: "กาแฟ" },
+            { name: "ออเร้นท์คอฟฟี่", hot: null, cold: 55, cat: "กาแฟ" },
+            { name: "ชาเขียวคอฟฟี่", hot: null, cold: 55, cat: "กาแฟ" },
+            { name: "กาแฟเพิ่มช็อต", hot: null, cold: 10, cat: "กาแฟ" },
+
+            // นม, ชา, โกโก้
+            { name: "ชาเขียวนมสด", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
+            { name: "ชาเขียวน้ำผึ้งมะนาว", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
+            { name: "นมชมพู", hot: null, cold: 35, cat: "นม / ชา / โกโก้" },
+            { name: "ชาไทยนมสด", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
+            { name: "ชาไทยมะนาว", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
+            { name: "ชาพีช", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
+            { name: "โกโก้", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
+            { name: "โอวัลติน", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
+
+            // มัทฉะ
+            { name: "เพียวมัทฉะ", hot: 35, cold: 50, cat: "มัทฉะ" },
+            { name: "มัทฉะมะพร้าว", hot: null, cold: 55, cat: "มัทฉะ" },
+            { name: "ชาเขียวมัทฉะ", hot: 35, cold: 55, cat: "มัทฉะ" },
+            { name: "มัทฉะลาเต้", hot: 40, cold: 55, cat: "มัทฉะ" },
+            { name: "มัทฉะน้ำส้ม", hot: null, cold: 55, cat: "มัทฉะ" },
+            { name: "มัทฉะลาเต้งาดำ", hot: null, cold: 55, cat: "มัทฉะ" },
+
+            // อิตาเลี่ยนโซดา
+            { name: "บลูเบอรี่โซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "บลูเลม่อนโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "บลูฮาวายโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "สตอเบอรี่โซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "อัญชันโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "แอปเปิ้ลโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "กีวี่โซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "ลิ้นจี่โซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "มะนาวโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "น้ำแดงโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "มิ้นส์โซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+            { name: "เสาวรสโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
+
+            // ขนม
+            { name: "ขนม 40 บาท", hot: null, cold: 40, cat: "ขนม" },
+            { name: "ขนม 45 บาท", hot: null, cold: 45, cat: "ขนม" },
+            { name: "ขนม 50 บาท", hot: null, cold: 50, cat: "ขนม" },
+            { name: "ขนม 55 บาท", hot: null, cold: 55, cat: "ขนม" }
+        ];
+
+        let cart = [];
+        let pendingCheckIndex = null; // เก็บ index ของแถวที่กำลังจะติ๊กถูก
+
+        window.onload = function() {
+            const savedCart = localStorage.getItem('posCartData');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+                cart.forEach(item => {
+                    if(item.isChecked === undefined) item.isChecked = false;
+                    // อัปเดตข้อมูลเก่าให้ payment กลับไปเป็น 'รอระบุ' ถ้ายังไม่ได้ติ๊ก
+                    if(!item.isChecked) item.payment = 'รอระบุ'; 
+                    if(item.cat === undefined) item.cat = item.name.includes("ขนม") ? "ขนม" : "เครื่องดื่ม";
+                });
+            }
+
+            const container = document.getElementById('menuContainer');
+            const categories = [...new Set(menuData.map(item => item.cat))];
+
+            categories.forEach(cat => {
+                const title = document.createElement('h2');
+                title.className = 'category-title';
+                title.innerText = cat;
+                container.appendChild(title);
+
+                const grid = document.createElement('div');
+                grid.className = 'menu-grid';
+                
+                const itemsInCat = menuData.filter(item => item.cat === cat);
+                itemsInCat.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'menu-card';
+                    
+                    let buttonsHTML = '';
+                    if (item.hot) {
+                        buttonsHTML += `<button class="btn-add btn-hot" onclick="addToCart('${item.name} (ร้อน)', ${item.hot}, '${item.cat}')">ร้อน ฿${item.hot}</button>`;
+                    }
+                    if (item.cold) {
+                        let label = item.hot ? 'เย็น' : '+ เพิ่ม';
+                        buttonsHTML += `<button class="btn-add btn-cold" onclick="addToCart('${item.name} ${item.hot ? '(เย็น)' : ''}', ${item.cold}, '${item.cat}')">${label} ฿${item.cold}</button>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="menu-name">${item.name}</div>
+                        <div class="btn-group">${buttonsHTML}</div>
+                    `;
+                    grid.appendChild(card);
+                });
+                container.appendChild(grid);
+            });
+
+            renderCart();
+        }
+
+        // กดปุ่มเมนู แล้วเข้าบิลเลย ไม่ต้องถาม
+        function addToCart(name, price, category) {
+            name = name.trim();
+            cart.push({ 
+                name: name, 
+                price: price, 
+                qty: 1, 
+                payment: 'รอระบุ', // ค่าเริ่มต้นคือยังไม่จ่าย
+                cat: category,
+                isChecked: false 
+            }); 
+            renderCart();
+        }
+
+        // ฟังก์ชันเมื่อกดคลิกที่ Checkbox หน้าออเดอร์
+        function toggleCheck(index) {
+            if (!cart[index].isChecked) {
+                // ถ้าเปลี่ยนจาก ยังไม่เสร็จ -> เสร็จ ให้เด้ง Modal เลือกวิธีจ่ายเงิน
+                pendingCheckIndex = index;
+                document.getElementById('modalItemName').innerText = `${cart[index].name} (฿${cart[index].price * cart[index].qty})`;
+                document.getElementById('paymentModal').style.display = 'flex';
+            } else {
+                // ถ้าเปลี่ยนจาก เสร็จแล้ว -> ยังไม่เสร็จ (ติ๊กออก) ให้ล้างวิธีจ่ายเงิน
+                cart[index].isChecked = false;
+                cart[index].payment = 'รอระบุ';
+                renderCart();
+            }
+        }
+
+        // ยืนยันวิธีจ่ายเงิน จาก Modal
+        function confirmPayment(paymentMethod) {
+            if (pendingCheckIndex !== null) {
+                cart[pendingCheckIndex].payment = paymentMethod;
+                cart[pendingCheckIndex].isChecked = true;
+                pendingCheckIndex = null;
+                renderCart();
+            }
+            closeModal();
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            pendingCheckIndex = null;
+            renderCart(); // รีเฟรชหน้าจอเผื่อ Checkbox ค้าง
+        }
+
+        function updateQty(index, change) {
+            cart[index].qty += change;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            renderCart();
+        }
+
+        function clearCart() {
+            cart = [];
+            renderCart();
+        }
+
+        function renderCart() {
+            localStorage.setItem('posCartData', JSON.stringify(cart));
+
+            const tbody = document.getElementById('cartBody');
+            tbody.innerHTML = '';
+            
+            let grandTotal = 0; // ยอดรวมทั้งหมด (ดึงทุกรายการ)
+            let totalCash = 0;  // ยอดที่จ่ายเงินสดแล้ว
+            let totalTransfer = 0; // ยอดที่โอนเงินแล้ว
+            let totalDrinks = 0; 
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.qty;
+                
+                // บวกยอดรวมทั้งหมดเสมอ
+                grandTotal += itemTotal;
+
+                // บวกแยกเฉพาะรายการที่ระบุการจ่ายแล้ว (ติ๊กถูกแล้ว)
+                if (item.payment === 'เงินสด') totalCash += itemTotal;
+                if (item.payment === 'โอนเงิน') totalTransfer += itemTotal;
+
+                if (item.cat !== 'ขนม') {
+                    totalDrinks += item.qty;
+                }
+
+                // กำหนดสีและข้อความของป้ายการจ่ายเงิน
+                let paymentBadgeText = '⏳ รอชำระเงิน';
+                let paymentBadgeColor = '#999';
+                if (item.payment === 'เงินสด') {
+                    paymentBadgeText = '💵 เงินสด';
+                    paymentBadgeColor = '#28a745';
+                } else if (item.payment === 'โอนเงิน') {
+                    paymentBadgeText = '📱 โอนเงิน';
+                    paymentBadgeColor = '#007bff';
+                }
+
+                const tr = document.createElement('tr');
+                if (item.isChecked) {
+                    tr.className = 'row-checked';
+                }
+                
+                tr.innerHTML = `
+                    <td style="font-weight: bold; font-size: 14px;">
+                        <div style="display: flex; align-items: center;">
+                            <input type="checkbox" class="checkbox-custom" ${item.isChecked ? 'checked' : ''} onclick="event.preventDefault(); toggleCheck(${index});">
+                            <div>
+                                <span class="${item.isChecked ? 'item-checked-text' : ''}">${item.name}</span>
+                                <br>
+                                <span class="payment-badge" style="color: ${paymentBadgeColor};">${paymentBadgeText}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color: #666;">฿${item.price}</td>
+                    <td>
+                        <div class="qty-control">
+                            <button class="btn-qty" onclick="updateQty(${index}, -1)">-</button>
+                            <span style="width: 20px; text-align: center; font-weight: bold;">${item.qty}</span>
+                            <button class="btn-qty" onclick="updateQty(${index}, 1)">+</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('totalDisplay').innerText = `฿${grandTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('summaryDisplay').innerHTML = `🥤 รวม: ${totalDrinks} แก้ว | 💵 เงินสด: ฿${totalCash.toLocaleString('th-TH')} | 📱 โอน: ฿${totalTransfer.toLocaleString('th-TH')}`;
+        }
+    </script>
+</body>
+</html>

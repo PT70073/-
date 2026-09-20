@@ -314,7 +314,7 @@
         ];
 
         let cart = [];
-        let pendingCheckIndex = null; // เก็บ index ของแถวที่กำลังจะติ๊กถูก
+        let pendingCheckIndex = null; 
 
         window.onload = function() {
             const savedCart = localStorage.getItem('posCartData');
@@ -322,7 +322,6 @@
                 cart = JSON.parse(savedCart);
                 cart.forEach(item => {
                     if(item.isChecked === undefined) item.isChecked = false;
-                    // อัปเดตข้อมูลเก่าให้ payment กลับไปเป็น 'รอระบุ' ถ้ายังไม่ได้ติ๊ก
                     if(!item.isChecked) item.payment = 'รอระบุ'; 
                     if(item.cat === undefined) item.cat = item.name.includes("ขนม") ? "ขนม" : "เครื่องดื่ม";
                 });
@@ -366,36 +365,31 @@
             renderCart();
         }
 
-        // กดปุ่มเมนู แล้วเข้าบิลเลย ไม่ต้องถาม
         function addToCart(name, price, category) {
             name = name.trim();
             cart.push({ 
                 name: name, 
                 price: price, 
                 qty: 1, 
-                payment: 'รอระบุ', // ค่าเริ่มต้นคือยังไม่จ่าย
+                payment: 'รอระบุ', 
                 cat: category,
                 isChecked: false 
             }); 
             renderCart();
         }
 
-        // ฟังก์ชันเมื่อกดคลิกที่ Checkbox หน้าออเดอร์
         function toggleCheck(index) {
             if (!cart[index].isChecked) {
-                // ถ้าเปลี่ยนจาก ยังไม่เสร็จ -> เสร็จ ให้เด้ง Modal เลือกวิธีจ่ายเงิน
                 pendingCheckIndex = index;
                 document.getElementById('modalItemName').innerText = `${cart[index].name} (฿${cart[index].price * cart[index].qty})`;
                 document.getElementById('paymentModal').style.display = 'flex';
             } else {
-                // ถ้าเปลี่ยนจาก เสร็จแล้ว -> ยังไม่เสร็จ (ติ๊กออก) ให้ล้างวิธีจ่ายเงิน
                 cart[index].isChecked = false;
                 cart[index].payment = 'รอระบุ';
                 renderCart();
             }
         }
 
-        // ยืนยันวิธีจ่ายเงิน จาก Modal
         function confirmPayment(paymentMethod) {
             if (pendingCheckIndex !== null) {
                 cart[pendingCheckIndex].payment = paymentMethod;
@@ -409,7 +403,7 @@
         function closeModal() {
             document.getElementById('paymentModal').style.display = 'none';
             pendingCheckIndex = null;
-            renderCart(); // รีเฟรชหน้าจอเผื่อ Checkbox ค้าง
+            renderCart(); 
         }
 
         function updateQty(index, change) {
@@ -431,26 +425,24 @@
             const tbody = document.getElementById('cartBody');
             tbody.innerHTML = '';
             
-            let grandTotal = 0; // ยอดรวมทั้งหมด (ดึงทุกรายการ)
-            let totalCash = 0;  // ยอดที่จ่ายเงินสดแล้ว
-            let totalTransfer = 0; // ยอดที่โอนเงินแล้ว
+            let grandTotal = 0; 
+            let totalCash = 0;  
+            let totalTransfer = 0; 
             let totalDrinks = 0; 
 
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.qty;
                 
-                // บวกยอดรวมทั้งหมดเสมอ
                 grandTotal += itemTotal;
 
-                // บวกแยกเฉพาะรายการที่ระบุการจ่ายแล้ว (ติ๊กถูกแล้ว)
                 if (item.payment === 'เงินสด') totalCash += itemTotal;
                 if (item.payment === 'โอนเงิน') totalTransfer += itemTotal;
 
-                if (item.cat !== 'ขนม') {
+                // เช็คว่าต้องไม่ใช่หมวดขนม และชื่อต้องไม่มีคำว่า "เพิ่มช็อต" จึงจะนับเป็นแก้ว
+                if (item.cat !== 'ขนม' && !item.name.includes('เพิ่มช็อต')) {
                     totalDrinks += item.qty;
                 }
 
-                // กำหนดสีและข้อความของป้ายการจ่ายเงิน
                 let paymentBadgeText = '⏳ รอชำระเงิน';
                 let paymentBadgeColor = '#999';
                 if (item.payment === 'เงินสด') {

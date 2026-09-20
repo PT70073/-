@@ -84,7 +84,7 @@
             padding: 15px;
             text-align: right;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .total-amount {
             font-size: 32px;
@@ -92,10 +92,41 @@
         }
         .total-summary {
             font-size: 14px;
-            margin-top: 8px;
+            margin-top: 6px;
             color: #ffeaa7;
             font-weight: 500;
         }
+        
+        .daily-mini-banner {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+        .daily-mini-banner b {
+            font-size: 16px;
+            color: #2ecc71;
+        }
+
+        .btn-manage-cash {
+            background-color: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .btn-manage-cash:active { background-color: #138496; }
+
         .cart-table-container {
             flex: 1;
             overflow-y: auto;
@@ -127,17 +158,36 @@
             cursor: pointer;
         }
         .btn-qty:active { background: #ccc; }
-        .btn-clear {
-            background-color: #dc3545;
+
+        .action-btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .btn-checkout {
+            flex: 2;
+            background-color: #28a745;
             color: white;
             border: none;
-            padding: 15px;
+            padding: 14px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 15px;
         }
+        .btn-checkout:active { background-color: #1e7e34; }
+        .btn-clear-cart {
+            flex: 1;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-clear-cart:active { background-color: #5a6268; }
         
         .checkbox-custom {
             transform: scale(1.6);
@@ -160,7 +210,7 @@
             font-weight: bold;
         }
 
-        /* ----- สไตล์สำหรับ Modal (หน้าต่างเด้ง) ----- */
+        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -175,7 +225,7 @@
             padding: 25px;
             border-radius: 12px;
             text-align: center;
-            width: 350px;
+            width: 360px;
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
         .modal-title {
@@ -217,6 +267,37 @@
             font-size: 16px;
             cursor: pointer;
         }
+
+        /* Cash Drawer Styling */
+        .cash-drawer-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .cash-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 15px; }
+        .cash-row.highlight-row { font-weight: bold; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+        .cash-row.total-row { font-size: 18px; font-weight: bold; color: #28a745; border-top: 2px solid #ddd; padding-top: 10px; margin-top: 8px; }
+        .expense-input-group { display: flex; gap: 8px; margin-bottom: 12px; }
+        .expense-input-group input { flex: 1; padding: 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 6px; }
+        .btn-add-exp { background: #ffc107; color: #333; border: none; padding: 10px; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .expense-list { list-style: none; padding: 0; margin: 0; max-height: 120px; overflow-y: auto; text-align: left; }
+        .expense-list li { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed #ccc; font-size: 13px; }
+        .btn-del-exp { background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; padding: 3px 8px; font-size: 12px; }
+        .btn-close-day {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -224,10 +305,20 @@
     <div class="menu-section" id="menuContainer"></div>
 
     <div class="cart-section">
+        <!-- บิลปัจจุบัน -->
         <div class="total-box">
+            <div style="font-size: 13px; opacity: 0.9;">บิลปัจจุบัน</div>
             <div class="total-amount" id="totalDisplay">฿0.00</div>
             <div class="total-summary" id="summaryDisplay">🥤 รวม: 0 แก้ว | 💵 เงินสด: ฿0 | 📱 โอน: ฿0</div>
         </div>
+
+        <!-- แถบสรุปยอดรวมทั้งวันของร้าน -->
+        <div class="daily-mini-banner">
+            <span>📊 ยอดขายสะสมวันนี้:</span>
+            <b id="miniDailyTotal">฿0</b>
+        </div>
+
+        <button class="btn-manage-cash" onclick="openCashDrawerModal()">💰 รายละเอียดลิ้นชักเงิน & รายจ่ายประจำวัน</button>
 
         <div class="cart-table-container">
             <table>
@@ -242,10 +333,13 @@
             </table>
         </div>
 
-        <button class="btn-clear" onclick="clearCart()">🗑️ เคลียร์รายการ (บิลใหม่)</button>
+        <div class="action-btn-group">
+            <button class="btn-checkout" onclick="checkoutBill()">✅ ปิดบิลนี้ (สะสมยอด)</button>
+            <button class="btn-clear-cart" onclick="clearCurrentCartOnly()">ล้างบิลนี้</button>
+        </div>
     </div>
 
-    <!-- Modal (หน้าต่างเด้งตอนกดติ๊กเช็คออเดอร์) -->
+    <!-- Modal เลือกชำระเงิน -->
     <div id="paymentModal" class="modal-overlay">
         <div class="modal-content">
             <h3 class="modal-title" id="modalItemName">ชื่อเมนู</h3>
@@ -258,9 +352,56 @@
         </div>
     </div>
 
+    <!-- Modal จัดการเงินลิ้นชัก & สรุปยอดวัน -->
+    <div id="cashDrawerModal" class="modal-overlay">
+        <div class="modal-content" style="width: 410px;">
+            <h3 class="modal-title">📊 สรุปยอดร้าน & ลิ้นชักเงิน</h3>
+            
+            <div class="cash-drawer-summary">
+                <div class="cash-row highlight-row">
+                    <span>🌟 ยอดขายรวมทั้งวัน (สด+โอน):</span>
+                    <span id="drawerDailyGrandTotal" style="color: #007bff;">฿0</span>
+                </div>
+                <div class="cash-row">
+                    <span>📱 ยอดโอนสะสมวันนี้:</span>
+                    <span id="drawerDailyTransfer">฿0</span>
+                </div>
+                <div class="cash-row">
+                    <span>💵 ยอดเงินสดสะสมวันนี้:</span>
+                    <span id="drawerDailyCash">฿0</span>
+                </div>
+                <div class="cash-row">
+                    <span>📥 เงินทอนเริ่มต้น:</span>
+                    <div>
+                        ฿ <input type="number" id="startingCashInput" value="500" style="width: 65px; text-align: right; padding: 4px; border:1px solid #ccc; border-radius:4px;" onchange="updateStartingCash()">
+                    </div>
+                </div>
+                <div class="cash-row" style="color: #dc3545;">
+                    <span>📤 หักรายจ่ายวันนี้:</span>
+                    <span id="drawerTotalExp">-฿0</span>
+                </div>
+                <div class="cash-row total-row">
+                    <span>เงินสดที่ต้องมีในลิ้นชัก:</span>
+                    <span id="drawerExpected">฿0</span>
+                </div>
+            </div>
+
+            <div style="font-weight: bold; text-align: left; font-size: 14px; margin-bottom: 8px;">➕ บันทึกรายจ่ายออก (ค่าน้ำแข็ง, ค่านม)</div>
+            <div class="expense-input-group">
+                <input type="text" id="expName" placeholder="ชื่อรายการ">
+                <input type="number" id="expAmount" placeholder="ยอดเงิน" style="width: 75px;">
+                <button class="btn-add-exp" onclick="addExpense()">บันทึก</button>
+            </div>
+            
+            <ul class="expense-list" id="expenseList"></ul>
+
+            <button class="btn-close-day" onclick="closeDayRoutine()">🌙 ปิดยอดสิ้นวัน (เคลียร์ยอดทั้งวันเริ่มใหม่)</button>
+            <button class="btn-cancel-modal" style="margin-top: 10px;" onclick="closeCashDrawerModal()">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+
     <script>
         const menuData = [
-            // กาแฟ
             { name: "อเมริกาโน่", hot: 30, cold: 40, cat: "กาแฟ" },
             { name: "เอสเปรสโซ่", hot: 30, cold: 45, cat: "กาแฟ" },
             { name: "คาปูชิโน่", hot: 35, cold: 45, cat: "กาแฟ" },
@@ -274,7 +415,6 @@
             { name: "ชาเขียวคอฟฟี่", hot: null, cold: 55, cat: "กาแฟ" },
             { name: "กาแฟเพิ่มช็อต", hot: null, cold: 10, cat: "กาแฟ" },
 
-            // นม, ชา, โกโก้
             { name: "ชาเขียวนมสด", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
             { name: "ชาเขียวน้ำผึ้งมะนาว", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
             { name: "นมชมพู", hot: null, cold: 35, cat: "นม / ชา / โกโก้" },
@@ -284,7 +424,6 @@
             { name: "โกโก้", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
             { name: "โอวัลติน", hot: 30, cold: 35, cat: "นม / ชา / โกโก้" },
 
-            // มัทฉะ
             { name: "เพียวมัทฉะ", hot: 35, cold: 50, cat: "มัทฉะ" },
             { name: "มัทฉะมะพร้าว", hot: null, cold: 55, cat: "มัทฉะ" },
             { name: "ชาเขียวมัทฉะ", hot: 35, cold: 55, cat: "มัทฉะ" },
@@ -292,7 +431,6 @@
             { name: "มัทฉะน้ำส้ม", hot: null, cold: 55, cat: "มัทฉะ" },
             { name: "มัทฉะลาเต้งาดำ", hot: null, cold: 55, cat: "มัทฉะ" },
 
-            // อิตาเลี่ยนโซดา
             { name: "บลูเบอรี่โซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
             { name: "บลูเลม่อนโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
             { name: "บลูฮาวายโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
@@ -306,7 +444,7 @@
             { name: "มิ้นส์โซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
             { name: "เสาวรสโซดา", hot: null, cold: 35, cat: "อิตาเลี่ยนโซดา" },
 
-            // ขนม
+            { name: "ขนม 35 บาท", hot: null, cold: 35, cat: "ขนม" },
             { name: "ขนม 40 บาท", hot: null, cold: 40, cat: "ขนม" },
             { name: "ขนม 45 บาท", hot: null, cold: 45, cat: "ขนม" },
             { name: "ขนม 50 บาท", hot: null, cold: 50, cat: "ขนม" },
@@ -314,18 +452,24 @@
         ];
 
         let cart = [];
+        let expenses = [];
+        let startingCash = 500;
+        let dailyCashTotal = 0;
+        let dailyTransferTotal = 0;
         let pendingCheckIndex = null; 
 
         window.onload = function() {
+            // โหลดข้อมูลบิลปัจจุบัน
             const savedCart = localStorage.getItem('posCartData');
             if (savedCart) {
                 cart = JSON.parse(savedCart);
-                cart.forEach(item => {
-                    if(item.isChecked === undefined) item.isChecked = false;
-                    if(!item.isChecked) item.payment = 'รอระบุ'; 
-                    if(item.cat === undefined) item.cat = item.name.includes("ขนม") ? "ขนม" : "เครื่องดื่ม";
-                });
             }
+
+            // โหลดข้อมูลยอดสะสมประจำวัน & ลิ้นชัก
+            if (localStorage.getItem('posStartingCash')) startingCash = parseFloat(localStorage.getItem('posStartingCash'));
+            if (localStorage.getItem('posDailyCash')) dailyCashTotal = parseFloat(localStorage.getItem('posDailyCash'));
+            if (localStorage.getItem('posDailyTransfer')) dailyTransferTotal = parseFloat(localStorage.getItem('posDailyTransfer'));
+            if (localStorage.getItem('posExpenses')) expenses = JSON.parse(localStorage.getItem('posExpenses'));
 
             const container = document.getElementById('menuContainer');
             const categories = [...new Set(menuData.map(item => item.cat))];
@@ -363,17 +507,13 @@
             });
 
             renderCart();
+            updateDailyBanner();
         }
 
         function addToCart(name, price, category) {
             name = name.trim();
             cart.push({ 
-                name: name, 
-                price: price, 
-                qty: 1, 
-                payment: 'รอระบุ', 
-                cat: category,
-                isChecked: false 
+                name: name, price: price, qty: 1, payment: 'รอระบุ', cat: category, isChecked: false 
             }); 
             renderCart();
         }
@@ -414,9 +554,132 @@
             renderCart();
         }
 
-        function clearCart() {
+        // ปิดบิลนี้ -> รวมยอดเข้ายอดประจำวัน
+        function checkoutBill() {
+            if (cart.length === 0) {
+                alert("ไม่มีรายการในบิลครับ");
+                return;
+            }
+
+            // เช็คว่ามีรายการไหนยังไม่ได้ติ๊กเลือกวิธีชำระเงินหรือไม่
+            let unassigned = cart.filter(item => item.payment === 'รอระบุ');
+            if (unassigned.length > 0) {
+                if (!confirm(`มี ${unassigned.length} รายการที่ยังไม่ได้ระบุวิธีจ่ายเงิน ต้องการปิดบิลนี้เลยหรือไม่? (รายการที่ยังไม่ระบุจะไม่ถูกนับเข้ายอดเงินสด/โอน)`)) {
+                    return;
+                }
+            }
+
+            cart.forEach(item => {
+                const sub = item.price * item.qty;
+                if (item.payment === 'เงินสด') dailyCashTotal += sub;
+                if (item.payment === 'โอนเงิน') dailyTransferTotal += sub;
+            });
+
+            localStorage.setItem('posDailyCash', dailyCashTotal);
+            localStorage.setItem('posDailyTransfer', dailyTransferTotal);
+
             cart = [];
+            localStorage.setItem('posCartData', JSON.stringify(cart));
             renderCart();
+            updateDailyBanner();
+        }
+
+        function clearCurrentCartOnly() {
+            if (confirm("ต้องการล้างรายการในบิลปัจจุบันนี้หรือไม่?")) {
+                cart = [];
+                localStorage.setItem('posCartData', JSON.stringify(cart));
+                renderCart();
+            }
+        }
+
+        function updateDailyBanner() {
+            let total = dailyCashTotal + dailyTransferTotal;
+            document.getElementById('miniDailyTotal').innerText = `฿${total.toLocaleString('th-TH')}`;
+        }
+
+        // Cash Drawer Modal
+        function openCashDrawerModal() {
+            document.getElementById('cashDrawerModal').style.display = 'flex';
+            renderCashDrawer();
+        }
+
+        function closeCashDrawerModal() {
+            document.getElementById('cashDrawerModal').style.display = 'none';
+        }
+
+        function updateStartingCash() {
+            let val = parseFloat(document.getElementById('startingCashInput').value) || 0;
+            startingCash = val;
+            localStorage.setItem('posStartingCash', startingCash);
+            renderCashDrawer();
+        }
+
+        function addExpense() {
+            let name = document.getElementById('expName').value.trim();
+            let amt = parseFloat(document.getElementById('expAmount').value);
+            
+            if (name && amt > 0) {
+                expenses.push({ name: name, amount: amt });
+                localStorage.setItem('posExpenses', JSON.stringify(expenses));
+                document.getElementById('expName').value = '';
+                document.getElementById('expAmount').value = '';
+                renderCashDrawer();
+            } else {
+                alert("กรุณาใส่ชื่อรายจ่ายและจำนวนเงินให้ถูกต้อง");
+            }
+        }
+
+        function removeExpense(index) {
+            expenses.splice(index, 1);
+            localStorage.setItem('posExpenses', JSON.stringify(expenses));
+            renderCashDrawer();
+        }
+
+        function closeDayRoutine() {
+            if (confirm("ต้องการปิดยอดสิ้นวันใช่หรือไม่?\n\n- ยอดขายประจำวันทั้งหมดจะถูกรีเซ็ตเป็น 0\n- รายการรายจ่ายจะถูกล้าง\n- เงินทอนเริ่มต้นจะคงไว้ที่ 500 บาท สำหรับวันถัดไป")) {
+                dailyCashTotal = 0;
+                dailyTransferTotal = 0;
+                expenses = [];
+                cart = [];
+
+                localStorage.setItem('posDailyCash', 0);
+                localStorage.setItem('posDailyTransfer', 0);
+                localStorage.setItem('posExpenses', JSON.stringify([]));
+                localStorage.setItem('posCartData', JSON.stringify([]));
+
+                renderCart();
+                renderCashDrawer();
+                updateDailyBanner();
+                closeCashDrawerModal();
+                alert("ปิดยอดวันเรียบร้อย พร้อมเริ่มวันใหม่แล้วครับ!");
+            }
+        }
+
+        function renderCashDrawer() {
+            let totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            let expectedCash = startingCash + dailyCashTotal - totalExpenses;
+            let grandTotalSales = dailyCashTotal + dailyTransferTotal;
+
+            document.getElementById('startingCashInput').value = startingCash;
+            document.getElementById('drawerDailyGrandTotal').innerText = `฿${grandTotalSales.toLocaleString('th-TH')}`;
+            document.getElementById('drawerDailyTransfer').innerText = `฿${dailyTransferTotal.toLocaleString('th-TH')}`;
+            document.getElementById('drawerDailyCash').innerText = `฿${dailyCashTotal.toLocaleString('th-TH')}`;
+            document.getElementById('drawerTotalExp').innerText = `-฿${totalExpenses.toLocaleString('th-TH')}`;
+            document.getElementById('drawerExpected').innerText = `฿${expectedCash.toLocaleString('th-TH')}`;
+
+            let expList = document.getElementById('expenseList');
+            expList.innerHTML = '';
+            expenses.forEach((exp, i) => {
+                expList.innerHTML += `
+                    <li>
+                        <span>📌 ${exp.name}</span>
+                        <div>
+                            <span style="color: #dc3545; font-weight:bold; margin-right: 8px;">฿${exp.amount.toLocaleString('th-TH')}</span>
+                            <button class="btn-del-exp" onclick="removeExpense(${i})">ลบ</button>
+                        </div>
+                    </li>
+                `;
+            });
         }
 
         function renderCart() {
@@ -425,22 +688,20 @@
             const tbody = document.getElementById('cartBody');
             tbody.innerHTML = '';
             
-            let grandTotal = 0; 
-            let totalCash = 0;  
-            let totalTransfer = 0; 
-            let totalDrinks = 0; 
+            let billGrandTotal = 0; 
+            let billCash = 0;  
+            let billTransfer = 0; 
+            let billDrinks = 0; 
 
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.qty;
-                
-                grandTotal += itemTotal;
+                billGrandTotal += itemTotal;
 
-                if (item.payment === 'เงินสด') totalCash += itemTotal;
-                if (item.payment === 'โอนเงิน') totalTransfer += itemTotal;
+                if (item.payment === 'เงินสด') billCash += itemTotal;
+                if (item.payment === 'โอนเงิน') billTransfer += itemTotal;
 
-                // เช็คว่าต้องไม่ใช่หมวดขนม และชื่อต้องไม่มีคำว่า "เพิ่มช็อต" จึงจะนับเป็นแก้ว
                 if (item.cat !== 'ขนม' && !item.name.includes('เพิ่มช็อต')) {
-                    totalDrinks += item.qty;
+                    billDrinks += item.qty;
                 }
 
                 let paymentBadgeText = '⏳ รอชำระเงิน';
@@ -481,8 +742,8 @@
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('totalDisplay').innerText = `฿${grandTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
-            document.getElementById('summaryDisplay').innerHTML = `🥤 รวม: ${totalDrinks} แก้ว | 💵 เงินสด: ฿${totalCash.toLocaleString('th-TH')} | 📱 โอน: ฿${totalTransfer.toLocaleString('th-TH')}`;
+            document.getElementById('totalDisplay').innerText = `฿${billGrandTotal.toLocaleString('th-TH', {minimumFractionDigits: 2})}`;
+            document.getElementById('summaryDisplay').innerHTML = `🥤 รวม: ${billDrinks} แก้ว | 💵 เงินสด: ฿${billCash.toLocaleString('th-TH')} | 📱 โอน: ฿${billTransfer.toLocaleString('th-TH')}`;
         }
     </script>
 </body>
